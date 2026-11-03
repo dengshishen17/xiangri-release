@@ -20,6 +20,40 @@
 
 ---
 
+## 项目预览
+
+> 以下截图均取自本仓库代码在本地真实运行的站点（前端 `localhost:8080` + 后端双实例 + MySQL + Redis）。
+
+### 首页 · 商户发现
+
+![首页](docs/screenshots/01-home.png)
+
+### 商户列表
+
+![商户列表](docs/screenshots/02-shop-list.png)
+
+### 商户详情
+
+![商户详情](docs/screenshots/03-shop-detail.png)
+
+### 笔记详情
+
+![笔记详情](docs/screenshots/04-blog-detail.png)
+
+### 个人中心
+
+![个人中心](docs/screenshots/05-profile.png)
+
+### 发布笔记
+
+![发布笔记](docs/screenshots/06-blog-edit.png)
+
+### 登录
+
+![登录](docs/screenshots/07-login.png)
+
+---
+
 ## 功能一览
 
 | 模块 | 说明 |
