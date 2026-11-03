@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>商户详情 · 巷里 XIANGRI</title>
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/shop-detail.css" rel="stylesheet">
+</head>
+<body>
+<div id="app" class="app-shopdetail">
+  <!-- 顶部浮层操作栏 -->
+  <header class="detail-bar">
+    <div class="subbar-back" @click="goBack">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.5 5.5 8 12l6.5 6.5"/>
+      </svg>
+    </div>
+    <div class="detail-brand">
+      <div class="brand-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M5 20V11.5L12 6l7 5.5V20" stroke="#F7F4ED" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9.6 20v-4.6a2.4 2.4 0 0 1 4.8 0V20" stroke="#F0A04B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="4" r="1.2" fill="#F0A04B"/>
+        </svg>
+      </div>
+      <span>巷里</span>
+    </div>
+    <div class="detail-share">···</div>
+  </header>
+
+  <!-- 主体 -->
+  <div class="detail-scroll">
+    <!-- 头图 -->
+    <div class="shop-hero" v-if="shop.images && shop.images.length">
+      <img :src="shop.images[0]" alt="">
+      <div class="shop-hero-mask"></div>
+      <div class="shop-hero-caption">
+        <h1 class="shop-title">{{shop.name}}</h1>
+        <div class="shop-hero-meta">
+          <span class="chip chip-accent">评分 {{displayScore}}</span>
+          <span class="chip">{{shop.comments || 0}} 条评价</span>
+        </div>
+      </div>
+    </div>
+    <div class="shop-hero shop-hero-empty" v-else>
+      <div class="shop-hero-caption">
+        <h1 class="shop-title">{{shop.name || '商户详情'}}</h1>
+      </div>
+    </div>
+
+    <!-- 评分卡：统一使用真实 shop.score / shop.comments / shop.avgPrice / shop.sold -->
+    <div class="shop-scorecard">
+      <div class="sc-item">
+        <div class="sc-value num">{{displayScore}}</div>
+        <div class="sc-label">综合评分</div>
+      </div>
+      <div class="sc-divider"></div>
+      <div class="sc-item">
+        <div class="sc-value num">{{shop.comments || 0}}</div>
+        <div class="sc-label">条评价</div>
+      </div>
+      <div class="sc-divider"></div>
+      <div class="sc-item">
+        <div class="sc-value num">{{shop.avgPrice || 0}}</div>
+        <div class="sc-label">人均（元）</div>
+      </div>
+      <div class="sc-rate">
+        <el-rate disabled :value="scoreValue" text-color="#F0A04B"></el-rate>
+      </div>
+    </div>
+
+    <!-- 榜单条 -->
+    <div class="shop-rank" v-if="shop.area">
+      <div class="rank-badge">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3.5 14.6 9l5.9.6-4.4 4 1.3 5.8L12 16.3 6.6 19.4 7.9 13.6l-4.4-4L9.4 9 12 3.5z"/>
+        </svg>
+      </div>
+      <span>{{shop.area}} · 巷里人气好店</span>
+      <svg class="rank-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 6l6 6-6 6"/>
+      </svg>
+    </div>
+
+    <!-- 图片墙：真实商户图片 -->
+    <div class="shop-images" v-if="shop.images && shop.images.length">
+      <div class="si-item" v-for="(s,i) in shop.images" :key="i">
+        <img :src="s" alt="" @error="onImgErr($event)">
+      </div>
+    </div>
+
+    <!-- 地址：地图 / 复制 操作入口 -->
+    <div class="shop-address">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/>
+        <circle cx="12" cy="10" r="2.4"/>
+      </svg>
+      <span class="addr-text">{{shop.address}}</span>
+      <div class="addr-actions">
+        <button type="button" class="addr-btn" @click="openMap">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4z"/><path d="M9 4v13M15 6.5v13"/>
+          </svg>
+          <span>地图</span>
+        </button>
+        <button type="button" class="addr-btn" @click="copyAddress">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>
+          </svg>
+          <span>复制</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 营业时间 -->
+    <div class="shop-open-time">
+      <span class="ot-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 1.8"/>
+        </svg>
+      </span>
+      <div class="ot-label">营业时间</div>
+      <div class="ot-value">{{shop.openHours}}</div>
+      <span class="ot-more">查看详情</span>
+    </div>
+
+    <div class="shop-divider"></div>
+
+    <!-- 优惠券 -->
+    <div class="shop-voucher">
+      <div class="voucher-head">
+        <span class="u-eyebrow">Coupons</span>
+        <span class="sh-title">到店礼遇</span>
+        <span class="sh-rule"></span>
+      </div>
+      <div class="voucher-box" v-for="v in vouchers" :key="v.id" v-if="!isEnd(v)">
+        <div class="voucher-left">
+          <div class="voucher-title">{{v.title || v.name}}</div>
+          <div class="voucher-subtitle">{{v.subTitle}}</div>
+          <div class="voucher-price">
+            <div class="price">￥ {{util.formatPrice(v.payValue)}}</div>
+            <span>{{discountText(v)}}</span>
+          </div>
+        </div>
+        <div class="voucher-notch"></div>
+        <div class="voucher-right">
+          <div v-if="v.type" class="seckill-box">
+            <div class="voucher-btn" :class="{'disable-btn': isNotBegin(v) || v.stock < 1}" @click="seckill(v)">限时抢购</div>
+            <div class="seckill-stock">剩余 <span class="num">{{v.stock}}</span> 张</div>
+            <div class="seckill-time num">{{formatTime(v)}}</div>
+          </div>
+          <div class="voucher-btn" v-else>抢购</div>
+        </div>
+      </div>
+      <div class="voucher-empty" v-if="vouchers.length === 0">暂时没有可用的到店礼遇</div>
+    </div>
+
+    <div class="shop-divider"></div>
+
+    <!-- 网友评价 -->
+    <div class="shop-comments">
+      <div class="comments-head">
+        <div>网友评价 <span>（{{shop.comments || 0}}）</span></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 6l6 6-6 6"/>
+        </svg>
+      </div>
+      <div class="comment-tags">
+        <div class="tag">味道赞</div>
+        <div class="tag">牛肉赞</div>
+        <div class="tag">菜品不错</div>
+        <div class="tag">回头客</div>
+        <div class="tag">分量足</div>
+        <div class="tag">停车方便</div>
+      </div>
+      <div class="comment-list">
+        <div class="comment-box" v-for="i in 3" :key="i">
+          <div class="comment-icon">
+            <img :src="commentAvatar" alt="" @error="onImgErr($event)">
+          </div>
+          <div class="comment-info">
+            <div class="comment-user">叶小乙 <span>Lv5</span></div>
+            <div class="comment-rate">
+              打分
+              <el-rate disabled :value="scoreValue"></el-rate>
+            </div>
+            <div class="comment-text">
+              某平台上买的券，价格可以当工作餐吃，虽然价格便宜，但是这家店一点都没有...
+            </div>
+            <div class="comment-images">
+              <img v-for="(ci, ciIdx) in commentImages" :key="ciIdx" :src="ci" alt="" @error="onImgErr($event)">
+            </div>
+            <div class="comment-foot">
+              本店共 {{shop.comments || 0}} 条评价
+            </div>
+          </div>
+        </div>
+        <div class="comments-all">
+          <div>查看全部 {{shop.comments || 0}} 条评价</div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6l6 6-6 6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="shop-divider"></div>
+    <div class="copyright">
+      © 2026 巷里 XIANGRI · 城市生活手边指南
+    </div>
+  </div>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      util,
+      shop: {},
+      vouchers: [],
+      // 评论区静态示例图（沿用原有数据，无对应后端接口）
+      commentAvatar: "https://p0.meituan.net/userheadpicbackend/57e44d6eba01aad0d8d711788f30a126549507.jpg%4048w_48h_1e_1c_1l%7Cwatermark%3D0",
+      commentImages: [
+        "https://qcloud.dpfile.com/pc/6T7MfXzx7USPIkSy7jzm40qZSmlHUF2jd-FZUL6WpjE9byagjLlrseWxnl1LcbuSGybIjx5eX6WNgCPvcASYAw.jpg",
+        "https://qcloud.dpfile.com/pc/sZ5q-zgglv4VXEWU71xCFjnLM_jUHq-ylq0GKivtrz3JksWQ1f7oBWZsxm1DWgcaGybIjx5eX6WNgCPvcASYAw.jpg",
+        "https://qcloud.dpfile.com/pc/xZy6W4NwuRFchlOi43DVLPFsx7KWWvPqifE1JTe_jreqdsBYA9CFkeSm2ZlF0OVmGybIjx5eX6WNgCPvcASYAw.jpg"
+      ]
+    },
+    computed: {
+      // shop.score 为 0~50 的整数存储（对应 0.0~5.0 分），统一换算展示
+      scoreValue() {
+        const s = Number(this.shop.score);
+        return isNaN(s) || !this.shop.score ? 0 : s / 10;
+      },
+      displayScore() {
+        return this.scoreValue.toFixed(1);
+      }
+    },
+    created() {
+      // 获取参数
+      let shopId = util.getUrlParam("id");
+      // 查询酒店信息
+      this.queryShopById(shopId);
+      // 查询优惠券信息
+      this.queryVoucher(shopId);
+    },
+    methods: {
+      goBack() {
+        history.back();
+      },
+      // 折扣文案：按接口返回的 payValue / actualValue 计算，保留一位小数
+      discountText(v) {
+        if (!v || !v.actualValue) return "";
+        const d = (v.payValue * 10) / v.actualValue;
+        return (Math.round(d * 10) / 10) + "折";
+      },
+      // 图片加载失败时降级为品牌占位图
+      onImgErr(e) {
+        const img = e && e.target;
+        if (!img || img.dataset.fallback) return;
+        img.dataset.fallback = "1";
+        img.src = "/imgs/icons/default-icon.png";
+      },
+      // 打开地图：使用商户真实经纬度
+      openMap() {
+        const x = this.shop.x;
+        const y = this.shop.y;
+        if (x == null || y == null) {
+          this.$message.warning("该商户暂无位置信息");
+          return;
+        }
+        const name = encodeURIComponent(this.shop.name || "商户位置");
+        const url = "https://uri.amap.com/marker?position=" + x + "," + y + "&name=" + name + "&src=xiangri&coordinate=gaode";
+        window.open(url, "_blank");
+      },
+      // 复制地址
+      copyAddress() {
+        const text = this.shop.address || "";
+        if (!text) {
+          this.$message.warning("暂无地址可复制");
+          return;
+        }
+        const done = () => this.$message.success("地址已复制");
+        const fallback = () => {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand("copy");
+            done();
+          } catch (e) {
+            this.$message.error("复制失败，请手动选择地址");
+          }
+          document.body.removeChild(ta);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(fallback);
+        } else {
+          fallback();
+        }
+      },
+      queryShopById(shopId) {
+        axios.get("/shop/" + shopId)
+        .then(({data}) => {
+          data.images = data.images.split(",")
+          this.shop = data
+        })
+        .catch(this.$message.error)
+      },
+      queryVoucher(shopId) {
+        axios.get("/voucher/list/" + shopId)
+        .then(({data}) => {
+          this.vouchers = data;
+        })
+        .catch(this.$message.error)
+      },
+      formatTime(v){
+        let b = new Date(v.beginTime);
+        let e = new Date(v.endTime);
+        return b.getMonth() + 1 + "月" + b.getDate() + "日 "
+          +  b.getHours() + ":" + this.formatMinutes(b.getMinutes())
+          + " ~ "/*  + e.getMonth() + 1 + "月" + e.getDate() + "日 " */
+          +  e.getHours() + ":" + this.formatMinutes(e.getMinutes());
+      },
+      formatMinutes(m){
+        if(m < 10) m = "0" + m
+        return m;
+      },
+      isNotBegin(v){
+        return new Date(v.beginTime).getTime() > new Date().getTime();
+      },
+      isEnd(v){
+        return new Date(v.endTime).getTime() < new Date().getTime();
+      },
+      seckill(v){
+        if(!token){
+          this.$message.error("请先登录")
+          // 未登录，跳转
+          setTimeout(() => {
+            location.href = "/login.html"
+          }, 200);
+          return;
+        }
+        if(this.isNotBegin(v)){
+          this.$message.error("优惠券抢购尚未开始！")
+          return;
+        }
+        if(this.isEnd(v)){
+          this.$message.error("优惠券抢购已经结束！")
+          return;
+        }
+        if(v.stock < 1){
+          this.$message.error("库存不足，请刷新再试试！")
+          return;
+        }
+        let id = v.id;
+        // 秒杀抢购
+        axios.post("/voucher-order/seckill/" + id)
+        .then(({data}) => {
+          // 抢购成功，这里输出订单id，支付功能TODO
+          this.$message.success("抢购成功，订单id：" + data)
+        })
+        .catch(this.$message.error)
+      }
+    }
+  })
+</script>
+</body>
+</html>

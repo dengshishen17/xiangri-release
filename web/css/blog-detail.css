@@ -1,0 +1,551 @@
+/* 巷里 · 笔记详情 */
+
+.app-blogdetail {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+
+/* ---------- 顶部操作栏 ---------- */
+.detail-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-3);
+  background: rgba(247, 244, 237, .86);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(232, 226, 214, .8);
+}
+
+.detail-bar .subbar-back {
+  background: rgba(255, 255, 255, .8);
+  border: 1px solid var(--line);
+}
+
+.detail-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  letter-spacing: .08em;
+}
+
+.detail-brand .brand-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.detail-share {
+  min-width: 32px;
+  text-align: right;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+
+/* ---------- 滚动主体 ---------- */
+.blog-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-top: 50px;
+  padding-bottom: 62px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 轮播容器：DOM 契约受保护（位置/尺寸由 JS 控制，不可改结构） */
+.blog-info-box {
+  position: relative;
+  overflow: hidden;
+  height: 62%;
+  width: 100%;
+  background: var(--surface-2);
+}
+
+.blog-info-box.indicator {
+  position: absolute;
+  right: 3vw;
+  bottom: 3vw;
+  width: 10vw;
+  height: 10vw;
+  line-height: 10vw;
+  border-radius: 5vw;
+  text-align: center;
+  background-color: rgba(0, 0, 0, .5);
+  color: #fff;
+  font-size: 14px;
+}
+
+.swiper-item {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-item img {
+  object-fit: cover;
+}
+
+/* 指示点 */
+.swiper-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.sd-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .5);
+  transition: background .2s ease, width .2s ease;
+}
+
+.sd-dot.is-on {
+  width: 16px;
+  border-radius: 3px;
+  background: var(--brand-accent);
+}
+
+/* ---------- 正文容器 ---------- */
+.blog-body {
+  background: var(--card);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  margin-top: -14px;
+  position: relative;
+  z-index: 2;
+  padding-bottom: var(--sp-4);
+}
+
+/* ---------- 作者行 ---------- */
+.basic {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-4) var(--sp-3);
+}
+
+.basic-icon {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  padding: 2px;
+  background: var(--card);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--brand-primary-soft);
+  cursor: pointer;
+}
+
+.basic-icon img {
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.basic-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.basic-info .name {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.basic-info .time {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.basic-act {
+  flex: none;
+  width: 84px;
+  text-align: right;
+}
+
+.logout-btn {
+  display: inline-block;
+  min-width: 76px;
+  height: 30px;
+  line-height: 28px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  text-align: center;
+  border: 1px solid var(--brand-primary);
+  color: var(--brand-primary);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease;
+}
+
+.logout-btn:hover {
+  background: var(--brand-primary);
+  color: #fff;
+}
+
+/* ---------- 正文排版 ---------- */
+.blog-text {
+  padding: 0 var(--sp-4) var(--sp-4);
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1.85;
+  color: var(--text);
+  letter-spacing: .01em;
+  word-break: break-word;
+}
+
+.blog-text img {
+  width: 100%;
+  border-radius: var(--r-md);
+  margin: var(--sp-3) 0;
+}
+
+.blog-text p { margin: 0 0 var(--sp-3); }
+
+/* ---------- 关联商户 ---------- */
+.shop-basic {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 0 var(--sp-4) var(--sp-4);
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease;
+}
+
+.shop-basic:hover {
+  background: var(--brand-primary-soft);
+  border-color: rgba(30, 107, 84, .3);
+}
+
+.shop-icon {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.shop-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shop-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.shop-info .name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shop-rate { margin: 2px 0; }
+
+.shop-avg {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-clay);
+}
+
+.shop-avg small {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.shop-arrow {
+  flex: none;
+  color: var(--text-faint);
+}
+
+/* ---------- 点赞 ---------- */
+.zan-box {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 0 var(--sp-4);
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--line);
+}
+
+.zan-icon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  color: var(--text-muted);
+  transition: color .18s ease, background .18s ease;
+}
+
+.zan-icon.is-on {
+  color: var(--brand-clay);
+  background: var(--brand-clay-soft);
+}
+
+.zan-list {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.user-icon-mini {
+  margin-left: -6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  padding: 1px;
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+
+.user-icon-mini:first-child { margin-left: 0; }
+
+.user-icon-mini img {
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.zan-text {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.blog-divider {
+  height: var(--sp-4);
+  background: var(--surface-2);
+}
+
+/* ---------- 评价 ---------- */
+.blog-comments {
+  padding: 0 var(--sp-4) var(--sp-4);
+}
+
+.comments-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  margin-bottom: var(--sp-3);
+}
+
+.comments-head span {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.comment-list { margin-top: var(--sp-2); }
+
+.comment-box {
+  display: flex;
+  gap: var(--sp-3);
+  padding-bottom: var(--sp-4);
+  margin-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.comment-icon {
+  width: 42px;
+  height: 42px;
+  flex: none;
+}
+
+.ci-fallback {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--brand-primary-soft);
+  color: var(--brand-primary);
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.comment-info { flex: 1; min-width: 0; }
+
+.comment-user {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-ink);
+}
+
+.comment-user span {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+  background: var(--brand-accent);
+  color: #fff;
+  margin-left: 4px;
+}
+
+.comment-rate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 4px 0 6px;
+}
+
+.comment-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-sub);
+}
+
+.comment-images {
+  display: flex;
+  gap: 6px;
+  margin: var(--sp-2) 0;
+  overflow-x: auto;
+}
+
+.ci-ph {
+  flex: none;
+  width: 76px;
+  height: 76px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(135deg, var(--surface-2), #E4DED1);
+}
+
+.comment-foot {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.comments-all {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--brand-primary);
+  font-weight: 600;
+}
+
+.copyright {
+  padding: var(--sp-4) 0 var(--sp-5);
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: .04em;
+}
+
+/* ---------- 底部操作条 ---------- */
+.action-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-4);
+  background: rgba(255, 255, 255, .94);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--line);
+}
+
+.action-bar .foot-box {
+  flex: none;
+  width: 76px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-sub);
+  cursor: pointer;
+}
+
+.action-bar .foot-view {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.action-bar .liked { color: var(--brand-clay); }
+
+.action-mid {
+  flex: 1;
+  text-align: center;
+}
+
+.action-brand {
+  font-family: var(--font-serif);
+  font-size: 12px;
+  letter-spacing: .18em;
+  color: var(--text-faint);
+}
+
+@media screen and (max-width: 420px) {
+  .blog-text { font-size: 14px; }
+  .blog-info-box { height: 58%; }
+}
+
+@media screen and (min-width: 900px) {
+  .blog-body { max-width: 860px; margin-left: auto; margin-right: auto; border-radius: var(--r-lg) var(--r-lg) 0 0; }
+  .blog-info-box { max-width: 860px; margin: 0 auto; }
+}

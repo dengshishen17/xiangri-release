@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>笔记 · 巷里 XIANGRI</title>
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/blog-detail.css" rel="stylesheet">
+</head>
+<body>
+<div id="app" class="app-blogdetail">
+  <!-- 顶部操作栏 -->
+  <header class="detail-bar">
+    <div class="subbar-back" @click="goBack">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.5 5.5 8 12l6.5 6.5"/>
+      </svg>
+    </div>
+    <div class="detail-brand">
+      <div class="brand-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M5 20V11.5L12 6l7 5.5V20" stroke="#F7F4ED" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9.6 20v-4.6a2.4 2.4 0 0 1 4.8 0V20" stroke="#F0A04B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="4" r="1.2" fill="#F0A04B"/>
+        </svg>
+      </div>
+      <span>巷里</span>
+    </div>
+    <div class="detail-share">···</div>
+  </header>
+
+  <!-- 滚动主体 -->
+  <div class="blog-scroll">
+    <!-- 图片轮播：DOM 契约受保护（.blog-info-box > .swiper-item） -->
+    <div class="blog-info-box" ref="swiper"
+         @touchstart="moveStart"
+         @touchmove="moving"
+         @touchend="moveEnd">
+      <div class="swiper-item" v-for="(img, i) in blog.images" :key="i">
+        <img :src="img" alt="" style="width: 100%" height="100%">
+      </div>
+      <div class="swiper-dots" v-if="blog.images && blog.images.length > 1">
+        <span class="sd-dot" v-for="(img, i) in blog.images" :key="'d'+i" :class="{ 'is-on': active === i }"></span>
+      </div>
+    </div>
+
+    <div class="blog-body">
+      <!-- 作者行 -->
+      <div class="basic">
+        <div class="basic-icon" @click="toOtherInfo">
+          <img :src="blog.icon || '/imgs/icons/default-icon.png'" alt="">
+        </div>
+        <div class="basic-info">
+          <div class="name">{{blog.name}}</div>
+          <span class="time">{{formatTime(new Date(blog.createTime))}}</span>
+        </div>
+        <div class="basic-act">
+          <div class="logout-btn" @click="follow" v-show="!user || user.id !== blog.userId ">
+            {{followed ? '已关注' : '＋ 关注'}}
+          </div>
+        </div>
+      </div>
+
+      <!-- 正文 -->
+      <div class="blog-text" v-html="blog.content"></div>
+
+      <!-- 关联商户 -->
+      <div class="shop-basic" @click="shop.id && (location.href = '/shop-detail.html?id=' + shop.id)">
+        <div class="shop-icon"><img :src="shop.image" alt=""></div>
+        <div class="shop-info">
+          <div class="name">{{shop.name}}</div>
+          <div class="shop-rate">
+            <el-rate disabled v-model="shop.score/10" text-color="#F0A04B"></el-rate>
+          </div>
+          <div class="shop-avg price">￥{{shop.avgPrice}}<small>/人</small></div>
+        </div>
+        <svg class="shop-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 6l6 6-6 6"/>
+        </svg>
+      </div>
+
+      <!-- 点赞 -->
+      <div class="zan-box">
+        <div class="zan-icon" :class="{ 'is-on': blog.isLike }">
+          <svg width="18" height="18" viewBox="0 0 24 24" :fill="blog.isLike ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 21H4.6A1.6 1.6 0 0 1 3 19.4V10l4.2-6.4a1.6 1.6 0 0 1 2.8 1.6L9.4 9H18a2 2 0 0 1 2 2.4l-1.4 7A2 2 0 0 1 16.6 20H7z"/>
+          </svg>
+        </div>
+        <div class="zan-list">
+          <div class="user-icon-mini" v-for="u in likes" :key="u.id">
+            <img :src="u.icon || '/imgs/icons/default-icon.png'" alt="">
+          </div>
+          <div class="zan-text">{{blog.liked}} 人点赞</div>
+        </div>
+      </div>
+
+      <div class="blog-divider"></div>
+
+      <!-- 网友评价 -->
+      <div class="blog-comments">
+        <div class="comments-head">
+          <div>网友评价 <span>（119）</span></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6l6 6-6 6"/>
+          </svg>
+        </div>
+        <div class="comment-list">
+          <div class="comment-box" v-for="i in 3" :key="i">
+            <div class="comment-icon">
+              <div class="ci-fallback">邻</div>
+            </div>
+            <div class="comment-info">
+              <div class="comment-user">叶小乙 <span>Lv5</span></div>
+              <div class="comment-rate">
+                打分
+                <el-rate disabled v-model="4.5"></el-rate>
+              </div>
+              <div class="comment-text">
+                某平台上买的券，价格可以当工作餐吃，虽然价格便宜，但是这家店一点都没有...
+              </div>
+              <div class="comment-images">
+                <div class="ci-ph"></div>
+                <div class="ci-ph"></div>
+                <div class="ci-ph"></div>
+                <div class="ci-ph"></div>
+              </div>
+              <div class="comment-foot">
+                浏览 641 &nbsp;&nbsp;&nbsp;&nbsp;评论 5
+              </div>
+            </div>
+          </div>
+          <div class="comments-all">
+            <div>查看全部 119 条评价</div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 6l6 6-6 6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="blog-divider"></div>
+      <div class="copyright">© 2026 巷里 XIANGRI · 城市生活手边指南</div>
+    </div>
+  </div>
+
+  <!-- 底部操作条 -->
+  <div class="action-bar">
+    <div class="foot-box">
+      <div class="foot-view" @click="addLike()">
+        <svg width="22" height="22" viewBox="0 0 24 24" :fill="blog.isLike ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 21H4.6A1.6 1.6 0 0 1 3 19.4V10l4.2-6.4a1.6 1.6 0 0 1 2.8 1.6L9.4 9H18a2 2 0 0 1 2 2.4l-1.4 7A2 2 0 0 1 16.6 20H7z"/>
+        </svg>
+        <span class="num" :class="{ liked: blog.isLike }">{{blog.liked}}</span>
+      </div>
+    </div>
+    <div class="action-mid">
+      <span class="action-brand">巷里 · 发现</span>
+    </div>
+    <div class="foot-box">
+      <div class="foot-view">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 12.5c0 3.9-3.6 7-8 7-1 0-2-.2-2.9-.5L4 20l1.4-3.8C4.5 15.2 4 13.9 4 12.5c0-3.9 3.6-7 8-7s8 3.1 8 7z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script>
+  let each = function (ary, callback) {
+    for (let i = 0, l = ary.length; i < l; i++) {
+      if (callback(ary[i], i) === false) break
+    }
+  }
+  const app = new Vue({
+    el: "#app",
+    data: {
+      util,
+      blog: {},
+      shop: {},
+      likes: [],
+      user: {}, // 登录用户
+      followed: false, // 是否关注了
+      _width: 0,
+      duration: 300,
+      container: null,
+      items: [],
+      active: 0,
+      start: {
+        x: 0,
+        y: 0
+      },
+      move: {
+        x: 0,
+        y: 0
+      },
+      sensitivity: 60,
+      resistance: 0.3
+    },
+    created() {
+      let id = util.getUrlParam("id");
+      this.queryBlogById(id);
+    },
+    methods: {
+      init() {
+        // 获得父容器节点
+        this.container = this.$refs.swiper
+        // 获得所有的子节点
+        this.items = this.container.querySelectorAll('.swiper-item')
+        this.updateItemWidth()
+        this.setTransform()
+        this.setTransition('none')
+      },
+      goBack() {
+        history.back();
+      },
+      toOtherInfo(){
+        if(this.blog.userId === this.user.id){
+          location.href = "/info.html"
+        }else{
+          location.href = "/other-info.html?id=" + this.blog.userId
+        }
+      },
+      queryBlogById(id) {
+        axios.get("/blog/" + id)
+          .then(({data}) => {
+            data.images = data.images.split(",")
+            this.blog = data;
+            this.$nextTick(this.init);
+            this.queryShopById(data.shopId)
+            this.queryLikeList(id);
+            this.queryLoginUser();
+          })
+          .catch(this.$message.error)
+      },
+      queryShopById(shopId) {
+        axios.get("/shop/" + shopId)
+          .then(({data}) => {
+            data.image = data.images.split(",")[0]
+            this.shop = data
+          })
+          .catch(this.$message.error)
+      },
+      queryLikeList(id){
+        axios.get("/blog/likes/" + id)
+          .then(({data}) => this.likes = data)
+          .catch(this.$message.error)
+      },
+      addLike(){
+        axios.put("/blog/like/" +this.blog.id)
+          .then(({data}) => {
+            axios.get("/blog/" + this.blog.id)
+              .then(({data}) => {
+                data.images = data.images.split(",")
+                this.blog = data;
+                this.queryLikeList(this.blog.id);
+              })
+              .catch(this.$message.error)
+          })
+          .catch(err => {
+            this.$message.error(err)
+          })
+      },
+      isFollowed(){
+        axios.get("/follow/or/not/" + this.blog.userId)
+          .then(({data}) => this.followed = data)
+          .catch(this.$message.error)
+      },
+      follow(){
+        axios.put("/follow/" + this.blog.userId + "/" + !this.followed)
+          .then(() => {
+            this.$message.success(this.followed ? "已取消关注" : "已关注")
+            this.followed = !this.followed
+          })
+          .catch(this.$message.error)
+      },
+      formatTime(b) {
+        return b.getFullYear() + "年" + (b.getMonth() + 1) + "月" + b.getDate() + "日 ";
+      },
+      formatMinutes(m) {
+        if(m < 10) m = "0" + m
+        return m;
+      },
+      queryLoginUser(){
+        // 查询用户信息
+        axios.get("/user/me")
+          .then(({ data }) => {
+            // 保存用户
+            this.user = data;
+            if(this.user.id !== this.blog.userId){
+              this.isFollowed();
+            }
+          })
+          .catch(console.log)
+      },
+      // 获取父容器宽度，并且更新所有的子节点宽度，因为我们默认所有子节点的宽高等于父节点的宽高
+      updateItemWidth() {
+        this._width = this.container.offsetWidth || document.documentElement.offsetWidth
+      },
+      // 根据当前活动子项的下标计算各个子项的X轴位置
+      // 计算公式(子项的下标 - 当前下标) * 子项宽度 + 偏移(手指移动距离)；
+      setTransform(offset) {
+        offset = offset || 0
+        each(this.items, (item, i) => {
+          let distance = (i - this.active) * this._width + offset
+          let transform = `translate3d(${distance}px, 0, 0)`
+          item.style.webkitTransform = transform
+          item.style.transform = transform
+        })
+      },
+      // 给每一个子项添加transition过度动画
+      setTransition(duration) {
+        duration = duration || this.duration
+        duration = typeof duration === 'number' ? (duration + 'ms') : duration
+        each(this.items, (item) => {
+          item.style.webkitTransition = duration
+          item.style.transition = duration
+        })
+      },
+      moveStart(e) {
+        console.log('moveStart')
+        this.start.x = e.changedTouches[0].pageX
+        this.start.y = e.changedTouches[0].pageY
+        this.setTransition('none')
+      },
+      moving(e) {
+        console.log('moving')
+        e.preventDefault()
+        e.stopPropagation()
+        let distanceX = e.changedTouches[0].pageX - this.start.x
+        let distanceY = e.changedTouches[0].pageY - this.start.y
+        if (Math.abs(distanceX) > Math.abs(distanceY)) {
+          this.isMoving = true
+          this.move.x = this.start.x + distanceX
+          this.move.y = this.start.y + distanceY
+          // 当活动子项为第一项且手指向右滑动或者活动项为最后一项切向左滑动的时候，添加阻力，形成一个拉弹簧的效果
+          if ((this.active === 0 && distanceX > 0) || (this.active === (this.items.length - 1) && distanceX < 0)) {
+            distanceX = distanceX * this.resistance
+          }
+          this.setTransform(distanceX)
+        }
+      },
+      moveEnd(e) {
+        console.log('moveEnd')
+        if (this.isMoving) {
+          e.preventDefault()
+          e.stopPropagation()
+          let distance = this.move.x - this.start.x
+          if (Math.abs(distance) > this.sensitivity) {
+            if (distance < 0) {
+              this.next()
+            } else {
+              this.prev()
+            }
+          } else {
+            this.back()
+          }
+          this.reset()
+          this.isMoving = false
+        }
+      },
+      next() {
+        let index = this.active + 1
+        // 运用动画切换到指定下标的子项
+        this.go(index)
+      },
+      prev() {
+        let index = this.active - 1
+        // 运用动画切换到指定下标的子项
+        this.go(index)
+      },
+      reset() {
+        this.start.x = 0
+        this.start.y = 0
+        this.move.x = 0
+        this.move.y = 0
+      },
+      back() {
+        this.setTransition()
+        this.setTransform()
+      },
+      destroy() {
+        this.setTransition('none')
+      },
+      // 运用动画切换到指定下标的子项
+      go(index) {
+        this.active = index
+        if (this.active < 0) {
+          this.active = 0
+        } else if (this.active > this.items.length - 1) {
+          this.active = this.items.length - 1
+        }
+        this.$emit('change', this.active)
+        this.setTransition()
+        this.setTransform()
+      }
+    }
+  })
+</script>
+</body>
+</html>

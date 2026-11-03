@@ -1,0 +1,373 @@
+/* 巷里 · 首页 */
+
+.app-index {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+
+/* ---------- 搜索下拉面板 ---------- */
+.topbar-search {
+  position: relative;
+}
+
+.search-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 90;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-3);
+  overflow: hidden;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.sp-head {
+  padding: 10px 14px 8px;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 700;
+  border-bottom: 1px solid var(--line);
+}
+
+.sp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+
+.sp-item:hover { background: var(--brand-primary-soft); }
+
+.sp-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  flex: none;
+  background: var(--surface-2);
+}
+
+.sp-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sp-body { flex: 1; min-width: 0; }
+
+.sp-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sp-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.sp-arrow { color: var(--text-faint); flex: none; }
+
+.sp-empty {
+  padding: 22px 14px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* ---------- 品类网格（5 列 × 2 行） ---------- */
+.type-grid {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--sp-3) var(--sp-2);
+  padding: var(--sp-3) var(--sp-3) var(--sp-4);
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+
+.tg-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: transform .18s ease;
+}
+
+.tg-item:hover { transform: translateY(-2px); }
+
+.tg-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-1);
+  flex: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.tg-item:hover .tg-icon {
+  border-color: rgba(30, 107, 84, .4);
+  box-shadow: var(--sh-2);
+}
+
+.tg-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tg-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ---------- 滚动区 ---------- */
+.feed-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.feed {
+  padding-bottom: var(--sp-5);
+}
+
+/* ---------- 头条精选带（横向紧凑，降低首屏占用） ---------- */
+.lead-card {
+  margin: 0 var(--sp-4);
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border-radius: var(--r-lg);
+  background: var(--brand-ink);
+  box-shadow: var(--sh-2);
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.lead-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sh-3);
+}
+
+.lead-cover {
+  position: relative;
+  width: 112px;
+  height: 84px;
+  flex: none;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.lead-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lead-badge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  padding: 2px 8px;
+  height: auto;
+  font-size: 10px;
+}
+
+.lead-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+
+.lead-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #fff;
+  letter-spacing: -.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lead-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  color: rgba(247, 244, 237, .78);
+  font-size: 11px;
+}
+
+.lead-author {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lead-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--brand-accent);
+  font-weight: 700;
+  flex: none;
+}
+
+/* ---------- 双列瀑布流 ---------- */
+/* 使用 flex-wrap 而非 CSS Grid：卡片高度由真实图片比例决定，
+   形成真正的错落瀑布流（CSS Grid 会按行高对齐而退化为规则网格） */
+.feed-grid {
+  padding: 0 var(--sp-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  align-items: flex-start;
+}
+
+.fc-card {
+  width: calc(50% - var(--sp-3) / 2);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.fc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sh-2);
+}
+
+.fc-cover {
+  width: 100%;
+  min-height: 96px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.fc-cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 96px;
+  object-fit: cover;
+}
+
+.fc-title {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-2) 0;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--brand-ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fc-foot {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: var(--sp-2);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.fc-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex: none;
+  background: var(--surface-2);
+}
+
+.fc-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fc-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fc-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--brand-clay);
+  font-weight: 700;
+  flex: none;
+}
+
+.feed-end {
+  margin-top: var(--sp-5);
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: .1em;
+  color: var(--text-faint);
+}
+
+/* ---------- 移动端 ---------- */
+@media screen and (max-width: 420px) {
+  .brand-name { font-size: 15px; }
+  .brand-name small { display: none; }
+  .city-pill { display: none; }
+  .topbar-search { max-width: none; }
+  .lead-title { font-size: 15px; }
+  .lead-cover { width: 96px; height: 72px; }
+  .feed-grid { padding-left: var(--sp-3); padding-right: var(--sp-3); gap: var(--sp-2); }
+  .lead-card { margin-left: var(--sp-3); margin-right: var(--sp-3); }
+  .type-grid { gap: var(--sp-2) 4px; padding-left: var(--sp-2); padding-right: var(--sp-2); }
+  .tg-icon { width: 38px; height: 38px; }
+}
+
+/* 桌面端：内容居中限宽 */
+@media screen and (min-width: 900px) {
+  .feed { max-width: 860px; margin: 0 auto; }
+  .type-grid { max-width: 860px; margin: 0 auto; width: 100%; }
+}

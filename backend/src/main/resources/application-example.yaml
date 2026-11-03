@@ -1,0 +1,47 @@
+# ==========================================================================
+# 巷里 XIANGRI · 后端配置模板（示例）
+# ==========================================================================
+# 本文件仅用于说明运行项目所需的环境变量，不含任何真实密码或密钥。
+# 复制为 application-local.yaml（或通过环境变量注入）后再填入真实值。
+#
+# 推荐方式：把敏感值放进环境变量 / .env 文件，application.yaml 中的占位符
+# 会自动读取，无需修改源码。
+# ==========================================================================
+
+server:
+  # 后端监听端口
+  port: ${SERVER_PORT:8081}
+
+spring:
+  datasource:
+    # MySQL 连接串。容器内访问宿主机请用 host.docker.internal
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/hmdp?useSSL=false&serverTimezone=UTC}
+    # MySQL 用户名
+    username: ${DB_USERNAME:root}
+    # MySQL 密码 —— 必填，请通过环境变量 DB_PASSWORD 注入
+    password: ${DB_PASSWORD:}
+
+  redis:
+    # Redis 主机名。容器内建议使用服务名（如 hmdp-redis），本机使用 127.0.0.1
+    host: ${REDIS_HOST:127.0.0.1}
+    # Redis 端口
+    port: ${REDIS_PORT:6379}
+    # Redis 密码 —— 必填，请通过环境变量 REDIS_PASSWORD 注入；无鉴权时留空
+    password: ${REDIS_PASSWORD:}
+
+# ==========================================================================
+# 第三方服务（当前项目代码未直接使用，保留占位以便后续扩展）
+# ==========================================================================
+# DeepSeek API Key
+# deepseek:
+#   api-key: ${DEEPSEEK_API_KEY:}
+#   base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+
+# 阿里云（DashScope / OSS 等）AccessKey
+# aliyun:
+#   access-key-id: ${ALIYUN_ACCESS_KEY_ID:}
+#   access-key-secret: ${ALIYUN_ACCESS_KEY_SECRET:}
+#   region: ${ALIYUN_REGION:cn-hangzhou}
+
+# 图片上传目录（可选，默认使用本地 nginx 静态目录）
+# IMAGE_UPLOAD_DIR=E:/hm-nginx-1.18.0/html/hmdp/imgs

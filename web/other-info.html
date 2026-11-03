@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>TA 的主页 · 巷里 XIANGRI</title>
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/info.css" rel="stylesheet">
+</head>
+<body>
+<div id="app" class="app-profile has-dock">
+  <!-- 顶部品牌栏 -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M5 20V11.5L12 6l7 5.5V20" stroke="#F7F4ED" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9.6 20v-4.6a2.4 2.4 0 0 1 4.8 0V20" stroke="#F0A04B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="4" r="1.2" fill="#F0A04B"/>
+        </svg>
+      </div>
+      <div class="brand-name">巷里<small>XIANGRI</small></div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="icon-btn" @click="goBack" title="返回">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.5 5.5 8 12l6.5 6.5"/>
+      </svg>
+    </div>
+  </header>
+
+  <!-- 个人封面 -->
+  <section class="profile-hero">
+    <div class="profile-row">
+      <div class="profile-avatar">
+        <img :src="user.icon || '/imgs/icons/default-icon.png'" alt="">
+      </div>
+      <div class="profile-meta">
+        <h1 class="profile-name">{{user.nickName}}</h1>
+        <div class="profile-tags">
+          <span class="chip">杭州</span>
+          <span class="chip chip-accent">巷里居民</span>
+        </div>
+        <div class="profile-intro" v-if="info.introduce">{{info.introduce}}</div>
+        <div class="profile-intro profile-intro-empty" v-else>这个人很懒，什么都没有留下</div>
+      </div>
+      <div class="profile-follow">
+        <div class="btn" :class="followed ? 'btn-ghost' : 'btn-primary'" @click="follow">
+          {{followed ? '已关注' : '＋ 关注'}}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 内容标签页 -->
+  <div class="content">
+    <el-tabs v-model="activeName" @tab-click="handleClick">
+      <el-tab-pane label="笔记" name="1">
+        <div class="note-list">
+          <div v-for="b in blogs" :key="b.id" class="note-row" @click="toBlogDetail(b)">
+            <div class="nr-cover"><img :src="b.images.split(',')[0]" alt=""></div>
+            <div class="nr-body">
+              <div class="nr-title" v-html="b.title"></div>
+              <div class="nr-meta">
+                <span class="nr-like">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 21H4.6A1.6 1.6 0 0 1 3 19.4V10l4.2-6.4a1.6 1.6 0 0 1 2.8 1.6L9.4 9H18a2 2 0 0 1 2 2.4l-1.4 7A2 2 0 0 1 16.6 20H7z"/>
+                  </svg>
+                  {{b.liked}}
+                </span>
+                <span class="nr-comment">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 12.5c0 3.9-3.6 7-8 7-1 0-2-.2-2.9-.5L4 20l1.4-3.8C4.5 15.2 4 13.9 4 12.5c0-3.9 3.6-7 8-7s8 3.1 8 7z"/>
+                  </svg>
+                  {{b.comments}}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="list-end" v-if="blogs.length === 0">TA 还没有发布笔记</div>
+        </div>
+      </el-tab-pane>
+      <el-tab-pane label="共同关注" name="2">
+        <div class="tab-block">
+          <div class="tab-block-title">你们都关注了</div>
+          <div class="follow-list">
+            <div class="follow-info" v-for="u in commonFollows" :key="u.id">
+              <div class="follow-info-icon" @click="toOtherInfo(u.id)">
+                <img :src="u.icon || '/imgs/icons/default-icon.png'" alt="">
+              </div>
+              <div class="follow-info-name">
+                <div class="name">{{u.nickName}}</div>
+              </div>
+              <div class="follow-info-btn" @click="toOtherInfo(u.id)">去主页看看</div>
+            </div>
+          </div>
+          <div class="list-end" v-if="commonFollows.length === 0">还没有共同关注的人</div>
+        </div>
+      </el-tab-pane>
+    </el-tabs>
+  </div>
+
+  <foot-bar :active-btn="0"></foot-bar>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      util,
+      user: "",
+      loginUser: {},
+      activeName: "1",
+      info: {},
+      blogs: [],
+      followed: false, // 是否关注了
+      commonFollows: [], // 共同关注
+    },
+    created() {
+      this.queryUser();
+      this.queryLoginUser();
+    },
+    methods: {
+      queryBlogs() {
+        axios.get("/blog/of/user", {
+            params: {id: this.user.id, current: 1}
+          })
+          .then(({data}) => this.blogs = data)
+          .catch(this.$message.error)
+      },
+      queryLoginUser() {
+        // 查询用户信息
+        axios.get("/user/me")
+          .then(({data}) => {
+            // 保存用户
+            this.loginUser = data;
+          })
+          .catch(console.log)
+      },
+      queryUser() {
+        // 查询用户信息
+        let id = util.getUrlParam("id")
+        axios.get("/user/" + id)
+          .then(({data}) => {
+            // 保存用户
+            this.user = data;
+            // 查询用户详情
+            this.queryUserInfo();
+            // 查询用户笔记
+            this.queryBlogs();
+            // 是否被关注
+            this.isFollowed();
+          })
+          .catch(console.log)
+      },
+      goBack() {
+        history.back();
+      },
+      queryUserInfo(id) {
+        axios.get("/user/info/" + this.user.id)
+          .then(({data}) => {
+            if (!data) {
+              return
+            }
+            // 保存用户详情
+            this.info = data;
+            // 保存到本地
+            sessionStorage.setItem("userInfo", JSON.stringify(data))
+          })
+          .catch(err => {
+            this.$message.error(err);
+          })
+      },
+      isFollowed(){
+        axios.get("/follow/or/not/" + this.user.id)
+          .then(({data}) => this.followed = data)
+          .catch(this.$message.error)
+      },
+      queryCommonFollow() {
+        axios.get("/follow/common/" + this.user.id)
+          .then(({data}) => this.commonFollows = data)
+          .catch(err => {
+            this.$message.error(err);
+          })
+      },
+      follow() {
+        axios.put("/follow/" + this.user.id + "/" + !this.followed)
+          .then(() => {
+            this.$message.success(this.followed ? "已取消关注" : "已关注")
+            this.followed = !this.followed
+          })
+          .catch(this.$message.error)
+      },
+      handleClick(t) {
+        if (t.name === '2') {
+          this.queryCommonFollow();
+        }
+      },
+      toBlogDetail(b) {
+        location.href = "/blog-detail.html?id=" + b.id
+      },
+      toOtherInfo(id){
+        location.href = "/other-info.html?id=" + id
+      }
+    },
+
+  })
+</script>
+</body>
+</html>

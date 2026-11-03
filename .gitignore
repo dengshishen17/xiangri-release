@@ -1,0 +1,62 @@
+# ==========================================================================
+# 巷里 XIANGRI · 统一忽略规则
+# ==========================================================================
+
+### 敏感配置与本地环境（严禁提交） ###
+.env
+.env.*
+!.env.example
+application-local.yaml
+application-local.yml
+application-local.properties
+*.local.yaml
+*.local.yml
+*.local.properties
+
+### 构建产物 ###
+target/
+build/
+dist/
+out/
+*.jar
+*.war
+*.class
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### 日志与运行产物 ###
+*.log
+logs/
+*.pid
+*.out
+*.tmp
+*.bak
+*.swp
+
+### 上传文件与用户数据 ###
+uploads/
+upload/
+**/uploads/
+
+### IDE ###
+.idea
+*.iws
+*.iml
+*.ipr
+.project
+.classpath
+.factorypath
+.settings
+.springBeans
+.sts4-cache
+.vscode/
+nbproject/private/
+nbbuild/
+nbdist/
+.gradle/
+.mvn/wrapper/maven-wrapper.jar
+
+### 系统文件 ###
+.DS_Store
+Thumbs.db

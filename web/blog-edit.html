@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>发布 · 巷里 XIANGRI</title>
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/blog-edit.css" rel="stylesheet">
+</head>
+<body>
+<div id="app" class="app-blogedit">
+  <!-- 顶栏 -->
+  <header class="subbar">
+    <div class="header-cancel-btn" @click="goBack">取消</div>
+    <div class="subbar-title">写点什么</div>
+    <div class="header-commit">
+      <div class="header-commit-btn" @click="submitBlog">发布</div>
+    </div>
+  </header>
+
+  <div class="edit-scroll">
+    <!-- 上传区 -->
+    <div class="upload-box">
+      <input type="file" @change="fileSelected" name="file" ref="fileInput" style="display: none">
+      <div class="upload-btn" @click="openFileDialog">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 8.5h3l1.6-2.4h6.8L17 8.5h3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5a1 1 0 0 1 1-1z"/>
+          <circle cx="12" cy="13" r="3.2"/>
+        </svg>
+        <div class="upload-text">添加照片</div>
+      </div>
+      <div class="pic-list">
+        <div class="pic-box" v-for="(f,i) in fileList" :key="i">
+          <img :src="f" alt="">
+          <i class="pic-del" @click="deletePic(i)">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+              <path d="M6 6l12 12M18 6L6 18"/>
+            </svg>
+          </i>
+        </div>
+      </div>
+    </div>
+
+    <!-- 标题 -->
+    <div class="blog-title">
+      <input v-model="params.title" type="text" placeholder="给这条内容起个标题…">
+    </div>
+
+    <!-- 正文 -->
+    <div class="blog-content">
+      <textarea v-model="params.content" placeholder="最近打卡了什么地方？有什么值得记下来的体验？"></textarea>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 关联商户 -->
+    <div class="blog-shop" @click="showDialog=true">
+      <div class="shop-left">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 9.5h16V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
+          <path d="M4 9.5 5.6 5a1 1 0 0 1 1-.7h10.8a1 1 0 0 1 1 .7L20 9.5"/>
+        </svg>
+        关联商户
+      </div>
+      <div v-if="selectedShop.name" class="shop-picked">{{selectedShop.name}}</div>
+      <div v-else class="shop-empty">去选择 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div>
+    </div>
+
+    <div class="edit-tail">
+      <span>巷里 XIANGRI · 城市生活手边指南</span>
+    </div>
+  </div>
+
+  <!-- 商户选择弹层：结构与过渡类受保护 -->
+  <div class="mask" v-show="showDialog" @click="showDialog=false"></div>
+
+  <transition name="el-zoom-in-bottom">
+    <div class="shop-dialog" v-show="showDialog">
+      <div class="dialog-head">
+        <div class="dialog-handle"></div>
+        <div class="dialog-title">关联商户</div>
+      </div>
+      <div class="search-bar">
+        <div class="city-select">杭州 <i class="el-icon-arrow-down"></i></div>
+        <div class="search-input">
+          <i class="el-icon-search" @click="queryShops"></i>
+          <input v-model="shopName" type="text" placeholder="搜索商户名称" @keyup.enter="queryShops">
+        </div>
+      </div>
+      <div class="shop-list">
+        <div v-for="s in shops" :key="s.id" class="shop-item" @click="selectShop(s)">
+          <div class="shop-name">{{s.name}}</div>
+          <div class="shop-area">{{s.area}}</div>
+        </div>
+        <div class="shop-none" v-if="shops.length === 0">没有匹配的商户</div>
+      </div>
+    </div>
+  </transition>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data() {
+      return {
+        util,
+        fileList: [], // 文件列表
+        params: {},
+        showDialog: false, //
+        shops: [], // 商户信息
+        shopName: "", //商户名称
+        selectedShop: {}, // 选中的商户
+      }
+    },
+    created() {
+      this.checkLogin();
+      this.queryShops();
+    },
+    methods: {
+      queryShops() {
+        axios.get("/shop/of/name?name=" + this.shopName)
+          .then(({data}) => this.shops = data)
+          .catch(this.$message.error)
+      },
+      selectShop(s) {
+        this.selectedShop = s;
+        this.showDialog = false;
+      },
+      submitBlog() {
+        let {...data} = this.params;
+        data.images = this.fileList.join(",");
+        data.shopId = this.selectedShop.id;
+        axios.post("/blog", data)
+          .then(resp => location.href = "/info.html")
+          .catch(this.$message.error)
+      },
+      openFileDialog() {
+        this.$refs.fileInput.click();
+      },
+      fileSelected() {
+        let file = this.$refs.fileInput.files[0];
+        let formData = new FormData();
+        formData.append("file", file);
+        const config = {
+          headers: {"Content-Type": "multipart/form-data;boundary=" + new Date().getTime()}
+        };
+        axios
+          .post("/upload/blog", formData, config)
+          .then(({data}) => this.fileList.push('/imgs' + data))
+          .catch(this.$message.error);
+      },
+      deletePic(i) {
+        axios.get("/upload/blog/delete?name=" + this.fileList[i])
+          .then(() => this.fileList.splice(i, 1))
+          .catch(this.$message.error)
+      },
+      checkLogin() {
+        // 获取token
+        let token = sessionStorage.getItem("token");
+        if (!token) {
+          location.href = "login.html"
+        }
+        // 查询用户信息
+        axios.get("/user/me")
+          .then()
+          .catch(err => {
+            this.$message.error(err);
+            setTimeout(() => location.href = "login.html", 200)
+          })
+      },
+      goBack() {
+        history.back();
+      },
+      handleRemove(file) {
+        console.log(file);
+      }
+    },
+
+  })
+</script>
+</body>
+</html>
